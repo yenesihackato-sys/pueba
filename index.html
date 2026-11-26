@@ -1,0 +1,1248 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI & WEB DEVELOPMENT - Plataforma Educativa (React 18)</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+
+    <!-- Librerías de React 18 & Babel Standalone para ejecución directa sin necesidad de Node/Vite -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+</head>
+<body>
+    <!-- Contenedor Raíz de React -->
+    <div id="root"></div>
+
+    <!-- Modo Vite / Servidor Web -->
+    <script type="module">
+        if (window.location.protocol.startsWith('http')) {
+            import('/src/main.jsx');
+        }
+    </script>
+    <!-- Modo Autónomo (Doble clic en index.html) -->
+    <script type="text/babel">
+        if (!window.location.protocol.startsWith('http')) {
+            const { useState, useEffect, useRef } = React;
+
+        // ==========================================
+        // 1. COMPONENTE: TOP NAVIGATION (IDE Header)
+        // ==========================================
+        function TopNav({ activeSection, onToggleSidebar, onToggleAssistant }) {
+            const fileNames = {
+                'inicio': 'inicio.edu',
+                'ia': 'inteligencia-artificial.ai',
+                'web': 'desarrollo-web.html',
+                'lenguajes': 'lenguajes.dev',
+                'herramientas': 'herramientas.tools',
+                'cuestionario': 'evaluacion.test'
+            };
+
+            return (
+                <header className="top-nav">
+                    <div className="top-nav-left">
+                        <button 
+                            className="icon-btn mobile-only" 
+                            onClick={onToggleSidebar}
+                            aria-label="Abrir Menú"
+                        >
+                            <i className="fa-solid fa-bars"></i>
+                        </button>
+                        <div className="ide-dots">
+                            <span className="dot red"></span>
+                            <span className="dot yellow"></span>
+                            <span className="dot green"></span>
+                        </div>
+                        <div className="brand-title">
+                            <i className="fa-solid fa-brain brand-icon"></i>
+                            <span className="brand-text">AI & WEB DEVELOPMENT</span>
+                            <span className="brand-badge"><i className="fa-brands fa-react"></i> React 18</span>
+                        </div>
+                    </div>
+
+                    <div className="top-nav-center">
+                        <div className="breadcrumb">
+                            <i className="fa-solid fa-folder-open"></i>
+                            <span>workspace</span>
+                            <i className="fa-solid fa-chevron-right separator"></i>
+                            <span className="active-file">{fileNames[activeSection] || 'inicio.edu'}</span>
+                        </div>
+                    </div>
+
+                    <div className="top-nav-right">
+                        <div className="status-indicator">
+                            <span className="status-pulse"></span>
+                            <span className="status-label">React Activo</span>
+                        </div>
+                        <button 
+                            className="icon-btn mobile-only" 
+                            onClick={onToggleAssistant}
+                            aria-label="Abrir Asistente"
+                        >
+                            <i className="fa-solid fa-robot"></i>
+                        </button>
+                    </div>
+                </header>
+            );
+        }
+
+        // ==========================================
+        // 2. COMPONENTE: SIDEBAR (Panel Izquierdo)
+        // ==========================================
+        function Sidebar({ activeSection, onNavigate, isOpen, progressPercent }) {
+            const navItems = [
+                { id: 'inicio', label: 'Inicio', ext: '.edu', icon: 'fa-solid fa-house-chimney icon-cyan' },
+                { id: 'ia', label: 'Inteligencia Artificial', ext: '.ai', icon: 'fa-solid fa-microchip icon-purple' },
+                { id: 'web', label: 'Desarrollo Web & React', ext: '.html', icon: 'fa-solid fa-code icon-blue' },
+                { id: 'lenguajes', label: 'Lenguajes de Programación', ext: '.dev', icon: 'fa-solid fa-terminal icon-yellow' },
+                { id: 'herramientas', label: 'Herramientas de IA y Web', ext: '.tools', icon: 'fa-solid fa-toolbox icon-orange' },
+                { id: 'cuestionario', label: 'Ejercicios y Cuestionario', ext: '.test', icon: 'fa-solid fa-square-check icon-green' }
+            ];
+
+            return (
+                <aside className={`panel left-panel ${isOpen ? 'open' : ''}`} id="sidebar">
+                    <div className="sidebar-header">
+                        <span className="explorer-title"><i className="fa-solid fa-compass"></i> EXPLORADOR REACT</span>
+                    </div>
+
+                    <nav className="sidebar-nav">
+                        <div className="nav-section-label">CURRICULUM EDUCATIVO</div>
+
+                        <ul className="nav-list">
+                            {navItems.map(item => (
+                                <li key={item.id}>
+                                    <button 
+                                        className={`nav-item ${activeSection === item.id ? 'active' : ''}`}
+                                        onClick={() => onNavigate(item.id)}
+                                    >
+                                        <i className={`nav-icon ${item.icon}`}></i>
+                                        <span className="nav-text">{item.label}</span>
+                                        <span className="file-ext">{item.ext}</span>
+                                    </button>
+                                </li>
+                            ))}
+                        </ul>
+
+                        <div className="nav-section-label mt-4">PROGRESO DEL ESTUDIANTE</div>
+                        <div className="progress-box">
+                            <div className="progress-header">
+                                <span>Avance Global</span>
+                                <span>{progressPercent}%</span>
+                            </div>
+                            <div className="progress-bar-bg">
+                                <div className="progress-bar-fill" style={{ width: `${progressPercent}%` }}></div>
+                            </div>
+                            <p className="progress-hint">
+                                <i className="fa-regular fa-lightbulb"></i> Explora los módulos y completa el test final.
+                            </p>
+                        </div>
+                    </nav>
+
+                    <div className="sidebar-footer">
+                        <div className="user-chip">
+                            <div className="user-avatar">
+                                <i className="fa-solid fa-user-astronaut"></i>
+                            </div>
+                            <div className="user-info">
+                                <span className="user-name">Estudiante Dev</span>
+                                <span className="user-role"><i className="fa-brands fa-react"></i> React Component</span>
+                            </div>
+                        </div>
+                    </div>
+                </aside>
+            );
+        }
+
+        // ==========================================
+        // 3. COMPONENTE: CUESTIONARIO (Quiz State)
+        // ==========================================
+        function InteractiveQuiz({ onNavigateHome }) {
+            const questions = [
+                {
+                    question: "1. ¿Cuál es el rol primordial de HTML en el desarrollo web moderno?",
+                    options: [
+                        "Definir la estructura y el contenido semántico de una página web.",
+                        "Añadir efectos visuales avanzados, sombras y paletas de color.",
+                        "Gestionar las bases de datos y la autenticación de usuarios en el servidor.",
+                        "Compilar código en lenguaje de máquina para la CPU."
+                    ],
+                    correct: 0,
+                    explanation: "¡Correcto! HTML aporta el esqueleto y la estructura semántica de los sitios y componentes web."
+                },
+                {
+                    question: "2. ¿Qué tipo de Inteligencia Artificial es la única existente hoy en día?",
+                    options: [
+                        "Superinteligencia Artificial (ASI) con conciencia propia.",
+                        "Inteligencia Artificial Estrecha o Débil (ANI), especializada en tareas específicas.",
+                        "Inteligencia Artificial General (AGI), capaz de igualar la mente humana en cualquier campo.",
+                        "Matriz Cuántica Universal autónoma."
+                    ],
+                    correct: 1,
+                    explanation: "¡Exacto! Toda la IA contemporánea (incluyendo ChatGPT, visión por computadora y asistentes) es IA Estrecha (ANI)."
+                },
+                {
+                    question: "3. ¿Qué beneficio central ofrece React en el desarrollo web Frontend?",
+                    options: [
+                        "Reemplazar por completo el uso de bases de datos relacionales.",
+                        "Construir interfaces de usuario mediante componentes reutilizables con estado reactivo.",
+                        "Evitar el uso de hojas de estilo CSS en todo el proyecto.",
+                        "Aumentar la velocidad del disco duro de la computadora del usuario."
+                    ],
+                    correct: 1,
+                    explanation: "¡Excelente! React permite diseñar componentes independientes y reutilizables que reaccionan a los cambios de estado eficientemente."
+                },
+                {
+                    question: "4. ¿Cuál es la principal diferencia entre el Frontend y el Backend?",
+                    options: [
+                        "El Frontend se ejecuta en el servidor y el Backend en Photoshop.",
+                        "El Frontend es la interfaz gráfica que ve el usuario; el Backend gestiona servidores, datos y seguridad.",
+                        "El Frontend solo usa Python y el Backend solo usa hojas de estilo CSS.",
+                        "No existe ninguna diferencia; son términos sinónimos."
+                    ],
+                    correct: 1,
+                    explanation: "¡Muy bien! El Frontend vive en el cliente (navegador) y el Backend opera en el servidor custodiando datos y lógica."
+                },
+                {
+                    question: "5. ¿Para qué se utiliza GitHub en la industria del software?",
+                    options: [
+                        "Para navegar por internet y ver transmisiones en vivo.",
+                        "Para alojar repositorios Git, colaborar en equipo y llevar control de versiones.",
+                        "Como sustituto del sistema operativo Windows.",
+                        "Para fabricar microprocesadores."
+                    ],
+                    correct: 1,
+                    explanation: "¡Perfecto! GitHub es la plataforma en la nube basada en Git que permite trabajar colaborativamente y rastrear cambios en el código."
+                }
+            ];
+
+            const [currentIndex, setCurrentIndex] = useState(0);
+            const [score, setScore] = useState(0);
+            const [selectedOption, setSelectedOption] = useState(null);
+            const [isFinished, setIsFinished] = useState(false);
+
+            const currentQ = questions[currentIndex];
+            const letters = ['A', 'B', 'C', 'D'];
+
+            const handleSelectOption = (index) => {
+                if (selectedOption !== null) return;
+                setSelectedOption(index);
+                if (index === currentQ.correct) {
+                    setScore(prev => prev + 1);
+                }
+            };
+
+            const handleNext = () => {
+                if (currentIndex < questions.length - 1) {
+                    setCurrentIndex(prev => prev + 1);
+                    setSelectedOption(null);
+                } else {
+                    setIsFinished(true);
+                }
+            };
+
+            const handleRestart = () => {
+                setCurrentIndex(0);
+                setScore(0);
+                setSelectedOption(null);
+                setIsFinished(false);
+            };
+
+            const progress = ((currentIndex + 1) / questions.length) * 100;
+
+            return (
+                <section className="content-section active">
+                    <div className="section-header-banner quiz-gradient">
+                        <div className="header-badge"><i className="fa-solid fa-award"></i> Componente React: Quiz State Machine</div>
+                        <h2>Cuestionario de Conocimientos</h2>
+                        <p>Responde 5 preguntas clave sobre Inteligencia Artificial y Desarrollo Web para evaluar tu comprensión.</p>
+                    </div>
+
+                    <div className="quiz-container-card">
+                        {!isFinished ? (
+                            <div>
+                                <div className="quiz-tracker">
+                                    <div className="tracker-info">
+                                        <span>Pregunta {currentIndex + 1} de {questions.length}</span>
+                                        <span id="quiz-score-badge">Aciertos: {score}</span>
+                                    </div>
+                                    <div className="tracker-bar-bg">
+                                        <div className="tracker-bar-fill" style={{ width: `${progress}%` }}></div>
+                                    </div>
+                                </div>
+
+                                <div className="question-header">
+                                    <h3>{currentQ.question}</h3>
+                                </div>
+
+                                <div className="options-list">
+                                    {currentQ.options.map((opt, idx) => {
+                                        let btnClass = "option-btn";
+                                        if (selectedOption !== null) {
+                                            if (idx === currentQ.correct) {
+                                                btnClass += " correct";
+                                            } else if (idx === selectedOption) {
+                                                btnClass += " wrong";
+                                            }
+                                        }
+                                        return (
+                                            <button 
+                                                key={idx}
+                                                className={btnClass}
+                                                onClick={() => handleSelectOption(idx)}
+                                                disabled={selectedOption !== null}
+                                            >
+                                                <span className="option-letter">{letters[idx]}</span>
+                                                <span className="option-text">{opt}</span>
+                                            </button>
+                                        );
+                                    })}
+                                </div>
+
+                                {selectedOption !== null && (
+                                    <div className={`quiz-feedback ${selectedOption === currentQ.correct ? 'success' : 'error'}`}>
+                                        <div className="feedback-icon">
+                                            <i className={`fa-solid ${selectedOption === currentQ.correct ? 'fa-circle-check' : 'fa-circle-xmark'}`} style={{ fontSize: '1.4rem' }}></i>
+                                        </div>
+                                        <div className="feedback-text">
+                                            <strong>{selectedOption === currentQ.correct ? '¡Excelente! ' : 'Incorrecto. '}</strong>
+                                            {currentQ.explanation}
+                                        </div>
+                                    </div>
+                                )}
+
+                                {selectedOption !== null && (
+                                    <div className="quiz-actions">
+                                        <button className="btn btn-primary" onClick={handleNext}>
+                                            {currentIndex === questions.length - 1 ? (
+                                                <>Ver Resultados <i className="fa-solid fa-trophy"></i></>
+                                            ) : (
+                                                <>Siguiente Pregunta <i className="fa-solid fa-arrow-right"></i></>
+                                            )}
+                                        </button>
+                                    </div>
+                                )}
+                            </div>
+                        ) : (
+                            <div className="quiz-results-screen">
+                                <div className="result-badge-circle">
+                                    <i className={`fa-solid ${score === 5 ? 'fa-crown' : score >= 3 ? 'fa-medal' : 'fa-book-open-reader'}`} style={{ color: score === 5 ? '#facc15' : score >= 3 ? '#38bdf8' : '#a855f7' }}></i>
+                                </div>
+                                <h3>
+                                    {score === 5 ? '¡Puntaje Perfecto! Maestro Tech 🚀' : score >= 3 ? '¡Muy Buen Trabajo! Conocimientos Sólidos 👏' : '¡Buen Intento! Sigue Aprendiendo 💡'}
+                                </h3>
+                                <p className="result-score-text">Tu puntaje final es:</p>
+                                <div className="score-display">
+                                    {score} / {questions.length}
+                                </div>
+                                <p className="result-summary">
+                                    {score === 5 
+                                        ? '¡Impresionante! Has demostrado un dominio absoluto de los conceptos clave de Inteligencia Artificial y Desarrollo Web con React.' 
+                                        : score >= 3 
+                                        ? 'Has aprobado con éxito la evaluación. Tienes claros los fundamentos técnicos.' 
+                                        : 'El aprendizaje es un proceso iterativo. Te recomendamos repasar las lecciones antes de reintentar.'}
+                                </p>
+                                <div className="result-actions">
+                                    <button className="btn btn-primary" onClick={handleRestart}>
+                                        <i className="fa-solid fa-rotate-left"></i> Reintentar Cuestionario
+                                    </button>
+                                    <button className="btn btn-secondary" onClick={onNavigateHome}>
+                                        <i className="fa-solid fa-house"></i> Volver al Inicio
+                                    </button>
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                </section>
+            );
+        }
+
+        // ==========================================
+        // 4. COMPONENTE: MAIN CONTENT (Panel Central)
+        // ==========================================
+        function MainContent({ activeSection, onNavigate }) {
+            const tabs = [
+                { id: 'inicio', label: 'inicio.edu', icon: 'fa-solid fa-file-code icon-cyan' },
+                { id: 'ia', label: 'inteligencia-artificial.ai', icon: 'fa-solid fa-brain icon-purple' },
+                { id: 'web', label: 'desarrollo-web.html', icon: 'fa-solid fa-globe icon-blue' },
+                { id: 'lenguajes', label: 'lenguajes.dev', icon: 'fa-solid fa-terminal icon-yellow' },
+                { id: 'herramientas', label: 'herramientas.tools', icon: 'fa-solid fa-wrench icon-orange' },
+                { id: 'cuestionario', label: 'evaluacion.test', icon: 'fa-solid fa-circle-question icon-green' }
+            ];
+
+            // Estados del Simulador de Sentimiento
+            const [sentimentInput, setSentimentInput] = useState('');
+            const [sentimentResult, setSentimentResult] = useState(null);
+            const [isAnalyzing, setIsAnalyzing] = useState(false);
+
+            // Estados del Mini Laboratorio
+            const [labTheme, setLabTheme] = useState('neon');
+            const [labClicks, setLabClicks] = useState(0);
+            const [labConsole, setLabConsole] = useState('Console: Estado React inicializado. Listo para interacciones.');
+
+            // Estado de Copia
+            const [copiedSnippet, setCopiedSnippet] = useState(null);
+
+            const handleAnalyzeSentiment = () => {
+                if (!sentimentInput.trim()) {
+                    setSentimentResult({ type: 'warning', text: 'Por favor, escribe un comentario para analizar.' });
+                    return;
+                }
+                setIsAnalyzing(true);
+                setTimeout(() => {
+                    const lower = sentimentInput.toLowerCase();
+                    const positiveWords = ['excelente', 'increible', 'encanta', 'fascinante', 'bueno', 'genial', 'facil', 'futuro', 'amor', 'feliz', 'perfecto', 'util', 'rapido'];
+                    const negativeWords = ['malo', 'dificil', 'odio', 'horrible', 'lento', 'error', 'aburrido', 'complicado', 'peligroso', 'peor', 'falla'];
+                    
+                    let score = 0;
+                    const words = lower.split(/\s+/);
+                    words.forEach(w => {
+                        const cleaned = w.replace(/[^a-záéíóúñ]/g, '');
+                        if (positiveWords.includes(cleaned)) score++;
+                        if (negativeWords.includes(cleaned)) score--;
+                    });
+
+                    if (score > 0) {
+                        setSentimentResult({ type: 'positive', text: 'Predicción: Sentimiento Positivo (Confianza estimada: 94.2%)' });
+                    } else if (score < 0) {
+                        setSentimentResult({ type: 'negative', text: 'Predicción: Sentimiento Crítico o Negativo (Confianza estimada: 89.7%)' });
+                    } else {
+                        setSentimentResult({ type: 'neutral', text: 'Predicción: Sentimiento Neutro o Informativo (Confianza estimada: 78.5%)' });
+                    }
+                    setIsAnalyzing(false);
+                }, 400);
+            };
+
+            const handleCopyCode = (id, codeText) => {
+                navigator.clipboard.writeText(codeText);
+                setCopiedSnippet(id);
+                setTimeout(() => setCopiedSnippet(null), 2000);
+            };
+
+            return (
+                <main className="panel center-panel" id="main-content">
+                    {/* Pestañas estilo IDE */}
+                    <div className="editor-tabs">
+                        {tabs.map(tab => (
+                            <div 
+                                key={tab.id}
+                                className={`tab ${activeSection === tab.id ? 'active' : ''}`}
+                                onClick={() => onNavigate(tab.id)}
+                            >
+                                <i className={`tab-icon ${tab.icon}`}></i>
+                                <span>{tab.label}</span>
+                            </div>
+                        ))}
+                    </div>
+
+                    <div className="content-scroll-area">
+                        {/* 1. SECCIÓN INICIO */}
+                        {activeSection === 'inicio' && (
+                            <section className="content-section active">
+                                <div className="hero-banner">
+                                    <div className="hero-badge">
+                                        <i className="fa-brands fa-react"></i> Bienvenidos a la Educación del Mañana • React 18
+                                    </div>
+                                    <h1 className="hero-title">Descubre el futuro de la tecnología</h1>
+                                    <p className="hero-subtitle">Aprende Inteligencia Artificial y Desarrollo Web de manera sencilla e interactiva</p>
+                                    
+                                    <div className="hero-actions">
+                                        <button className="btn btn-primary" onClick={() => onNavigate('ia')}>
+                                            <i className="fa-solid fa-rocket"></i> Iniciar Ruta de Aprendizaje
+                                        </button>
+                                        <button className="btn btn-secondary" onClick={() => onNavigate('cuestionario')}>
+                                            <i className="fa-solid fa-clipboard-check"></i> Probar Cuestionario
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <h2 className="section-title"><i className="fa-solid fa-cubes"></i> Módulos de Aprendizaje</h2>
+                                <div className="modules-grid">
+                                    <div className="module-card card-ia" onClick={() => onNavigate('ia')}>
+                                        <div className="card-icon-box"><i className="fa-solid fa-microchip"></i></div>
+                                        <h3>Inteligencia Artificial</h3>
+                                        <p>Comprende qué es la IA, redes neuronales, Machine Learning, sus aplicaciones reales y el debate ético moderno.</p>
+                                        <div className="card-footer-info">
+                                            <span><i className="fa-regular fa-clock"></i> 5 Lecciones</span>
+                                            <span className="card-link">Explorar <i className="fa-solid fa-arrow-right"></i></span>
+                                        </div>
+                                    </div>
+
+                                    <div className="module-card card-web" onClick={() => onNavigate('web')}>
+                                        <div className="card-icon-box"><i className="fa-solid fa-code"></i></div>
+                                        <h3>Desarrollo Web & React</h3>
+                                        <p>Domina los fundamentos de la web moderna: HTML, CSS, JavaScript y la arquitectura por componentes con React.</p>
+                                        <div className="card-footer-info">
+                                            <span><i className="fa-regular fa-clock"></i> 5 Lecciones</span>
+                                            <span className="card-link">Explorar <i className="fa-solid fa-arrow-right"></i></span>
+                                        </div>
+                                    </div>
+
+                                    <div className="module-card card-lenguajes" onClick={() => onNavigate('lenguajes')}>
+                                        <div className="card-icon-box"><i className="fa-solid fa-terminal"></i></div>
+                                        <h3>Lenguajes de Programación</h3>
+                                        <p>Conoce los lenguajes fundamentales como Python para IA, JavaScript/TypeScript para la web y su interoperabilidad.</p>
+                                        <div className="card-footer-info">
+                                            <span><i className="fa-regular fa-clock"></i> 3 Lenguajes</span>
+                                            <span className="card-link">Explorar <i className="fa-solid fa-arrow-right"></i></span>
+                                        </div>
+                                    </div>
+
+                                    <div className="module-card card-tools" onClick={() => onNavigate('herramientas')}>
+                                        <div className="card-icon-box"><i className="fa-solid fa-toolbox"></i></div>
+                                        <h3>Herramientas Esenciales</h3>
+                                        <p>Descubre el poder de ChatGPT, Google Gemini, GitHub y Visual Studio Code para acelerar tu desarrollo.</p>
+                                        <div className="card-footer-info">
+                                            <span><i className="fa-regular fa-clock"></i> 4 Herramientas</span>
+                                            <span className="card-link">Explorar <i className="fa-solid fa-arrow-right"></i></span>
+                                        </div>
+                                    </div>
+
+                                    <div className="module-card card-quiz" onClick={() => onNavigate('cuestionario')}>
+                                        <div className="card-icon-box"><i className="fa-solid fa-award"></i></div>
+                                        <h3>Retos y Cuestionario</h3>
+                                        <p>Pon a prueba tus conocimientos con nuestro cuestionario interactivo de 5 preguntas y obtén tu calificación al instante.</p>
+                                        <div className="card-footer-info">
+                                            <span><i className="fa-solid fa-check-double"></i> 5 Preguntas</span>
+                                            <span className="card-link">Evaluarme <i className="fa-solid fa-arrow-right"></i></span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="interactive-preview-box">
+                                    <div className="preview-header">
+                                        <i className="fa-solid fa-lightbulb"></i>
+                                        <span>¿Por qué unir Inteligencia Artificial y Desarrollo Web?</span>
+                                    </div>
+                                    <div className="preview-body">
+                                        <p>El desarrollo web actual integra modelos de lenguaje, visión por computadora y análisis predictivo en tiempo real para ofrecer experiencias personalizadas. ¡Aquí aprenderás cómo se conectan ambos mundos!</p>
+                                    </div>
+                                </div>
+                            </section>
+                        )}
+
+                        {/* 2. SECCIÓN INTELIGENCIA ARTIFICIAL */}
+                        {activeSection === 'ia' && (
+                            <section className="content-section active">
+                                <div className="section-header-banner ia-gradient">
+                                    <div className="header-badge"><i className="fa-solid fa-brain"></i> Módulo 01</div>
+                                    <h2>Inteligencia Artificial (IA)</h2>
+                                    <p>Aprende cómo las máquinas procesan información, aprenden de datos y resuelven problemas complejos.</p>
+                                </div>
+
+                                <div className="topic-card">
+                                    <div className="topic-header">
+                                        <span className="topic-number">01</span>
+                                        <h3>¿Qué es la Inteligencia Artificial?</h3>
+                                    </div>
+                                    <p className="topic-text">
+                                        La <strong>Inteligencia Artificial (IA)</strong> es una disciplina de las ciencias de la computación dedicada a crear sistemas y algoritmos capaces de realizar tareas que habitualmente requieren de la inteligencia humana: razonamiento, aprendizaje automático y reconocimiento de patrones.
+                                    </p>
+                                    <div className="callout callout-info">
+                                        <i className="fa-solid fa-circle-info"></i>
+                                        <div>
+                                            <strong>Dato clave:</strong> La IA no "piensa" como un ser humano; utiliza modelos matemáticos y estadísticos para calcular la probabilidad de la respuesta más acertada según datos previos.
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="topic-card">
+                                    <div className="topic-header">
+                                        <span className="topic-number">02</span>
+                                        <h3>¿Cómo funciona la IA? El Ciclo de Aprendizaje</h3>
+                                    </div>
+                                    <p className="topic-text">
+                                        En la IA el sistema aprende las reglas por sí mismo analizando miles o millones de ejemplos a través de un ciclo continuo:
+                                    </p>
+
+                                    <div className="ai-flowchart">
+                                        <div className="flow-step">
+                                            <div className="flow-icon"><i className="fa-solid fa-database"></i></div>
+                                            <h4>1. Recolección de Datos</h4>
+                                            <p>Fotos, textos, audios o mediciones del mundo real.</p>
+                                        </div>
+                                        <div className="flow-arrow"><i className="fa-solid fa-arrow-right"></i></div>
+                                        <div className="flow-step">
+                                            <div className="flow-icon"><i className="fa-solid fa-gears"></i></div>
+                                            <h4>2. Entrenamiento</h4>
+                                            <p>Algoritmos de Machine Learning ajustan parámetros matemáticos.</p>
+                                        </div>
+                                        <div className="flow-arrow"><i className="fa-solid fa-arrow-right"></i></div>
+                                        <div className="flow-step">
+                                            <div className="flow-icon"><i className="fa-solid fa-network-wired"></i></div>
+                                            <h4>3. Modelo Resultante</h4>
+                                            <p>Estructura neuronal optimizada para reconocer patrones.</p>
+                                        </div>
+                                        <div className="flow-arrow"><i className="fa-solid fa-arrow-right"></i></div>
+                                        <div className="flow-step">
+                                            <div className="flow-icon"><i className="fa-solid fa-bullseye"></i></div>
+                                            <h4>4. Inferencia</h4>
+                                            <p>Predice o genera respuestas ante datos nuevos.</p>
+                                        </div>
+                                    </div>
+
+                                    <div className="interactive-simulator">
+                                        <h4><i className="fa-solid fa-flask"></i> Simulador Práctico: Clasificador de Comentarios (Estado React)</h4>
+                                        <p>Escribe un comentario y el modelo heurístico clasificará el sentimiento en tiempo real:</p>
+                                        <div className="sim-input-row">
+                                            <input 
+                                                type="text" 
+                                                className="sim-input" 
+                                                placeholder="Ej: Me encanta aprender a programar, es fascinante..."
+                                                value={sentimentInput}
+                                                onChange={(e) => setSentimentInput(e.target.value)}
+                                            />
+                                            <button className="btn btn-primary" onClick={handleAnalyzeSentiment} disabled={isAnalyzing}>
+                                                <i className="fa-solid fa-wand-magic-sparkles"></i> {isAnalyzing ? 'Analizando...' : 'Analizar Sentimiento'}
+                                            </button>
+                                        </div>
+                                        <div className="sim-result">
+                                            {!sentimentResult && <span className="placeholder-text">Esperando tu texto para predecir...</span>}
+                                            {sentimentResult && (
+                                                <div style={{ color: sentimentResult.type === 'positive' ? 'var(--accent-green)' : sentimentResult.type === 'negative' ? 'var(--accent-orange)' : 'var(--cyan-primary)', fontWeight: 600 }}>
+                                                    <i className={`fa-solid ${sentimentResult.type === 'positive' ? 'fa-face-smile' : sentimentResult.type === 'negative' ? 'fa-face-frown' : 'fa-face-meh'}`}></i> {sentimentResult.text}
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="topic-card">
+                                    <div className="topic-header">
+                                        <span className="topic-number">03</span>
+                                        <h3>Tipos de Inteligencia Artificial</h3>
+                                    </div>
+                                    <div className="cards-subgrid">
+                                        <div className="subcard">
+                                            <div className="subcard-tag tag-ani">Actual</div>
+                                            <h4>IA Estrecha o Débil (ANI)</h4>
+                                            <p>Especializada en una única tarea específica (reconocer rostros, jugar ajedrez, traducir texto). Es la única IA existente hoy en día.</p>
+                                        </div>
+                                        <div className="subcard">
+                                            <div className="subcard-tag tag-agi">En Desarrollo</div>
+                                            <h4>IA General (AGI)</h4>
+                                            <p>Hipotética IA con la habilidad de entender, aprender y aplicar conocimiento en cualquier área al mismo nivel cognitivo que un ser humano.</p>
+                                        </div>
+                                        <div className="subcard">
+                                            <div className="subcard-tag tag-asi">Teórica</div>
+                                            <h4>Superinteligencia (ASI)</h4>
+                                            <p>Concepto teórico de una máquina cuya inteligencia superaría ampliamente a toda la mente humana en todos los campos.</p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="topic-card">
+                                    <div className="topic-header">
+                                        <span className="topic-number">04</span>
+                                        <h3>Aplicaciones en la Vida Cotidiana</h3>
+                                    </div>
+                                    <div className="features-grid">
+                                        <div className="feature-item">
+                                            <i className="fa-solid fa-microphone-lines icon-cyan"></i>
+                                            <div>
+                                                <h5>Asistentes Virtuales</h5>
+                                                <p>Siri, Google Assistant o Alexa procesan lenguaje natural (NLP) para responder.</p>
+                                            </div>
+                                        </div>
+                                        <div className="feature-item">
+                                            <i className="fa-solid fa-film icon-purple"></i>
+                                            <div>
+                                                <h5>Motores de Recomendación</h5>
+                                                <p>Netflix, Spotify y YouTube predicen qué contenido te gustará.</p>
+                                            </div>
+                                        </div>
+                                        <div className="feature-item">
+                                            <i className="fa-solid fa-car icon-blue"></i>
+                                            <div>
+                                                <h5>Vehículos Autónomos</h5>
+                                                <p>Sistemas como Tesla o Waymo analizan cámaras y sensores para maniobrar en tráfico.</p>
+                                            </div>
+                                        </div>
+                                        <div className="feature-item">
+                                            <i className="fa-solid fa-notes-medical icon-green"></i>
+                                            <div>
+                                                <h5>Medicina y Diagnóstico</h5>
+                                                <p>Detección temprana de anomalías en radiografías y diseño molecular de fármacos.</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="topic-card">
+                                    <div className="topic-header">
+                                        <span className="topic-number">05</span>
+                                        <h3>Ventajas y Desventajas de la IA</h3>
+                                    </div>
+                                    <div className="comparison-grid">
+                                        <div className="comparison-col pros">
+                                            <h4><i className="fa-solid fa-circle-check text-green"></i> Ventajas</h4>
+                                            <ul>
+                                                <li><strong>Automatización:</strong> Tareas repetitivas 24/7 sin fatiga.</li>
+                                                <li><strong>Velocidad de análisis:</strong> Procesa billones de datos en milisegundos.</li>
+                                                <li><strong>Reducción de errores:</strong> Alta precisión en cálculos complejos.</li>
+                                                <li><strong>Innovación médica:</strong> Avances en diagnóstico y genética.</li>
+                                            </ul>
+                                        </div>
+                                        <div className="comparison-col cons">
+                                            <h4><i className="fa-solid fa-triangle-exclamation text-orange"></i> Desventajas y Retos</h4>
+                                            <ul>
+                                                <li><strong>Sesgos algorítmicos:</strong> Si los datos tienen sesgos, la IA los repetirá.</li>
+                                                <li><strong>Desafíos laborales:</strong> Desplazamiento y reconversión de empleos.</li>
+                                                <li><strong>Consumo energético:</strong> Gran demanda eléctrica en centros de datos.</li>
+                                                <li><strong>Privacidad y seguridad:</strong> Riesgos de suplantación y deepfakes.</li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+                            </section>
+                        )}
+
+                        {/* 3. SECCIÓN DESARROLLO WEB & REACT */}
+                        {activeSection === 'web' && (
+                            <section className="content-section active">
+                                <div className="section-header-banner web-gradient">
+                                    <div className="header-badge"><i className="fa-brands fa-react"></i> Módulo 02</div>
+                                    <h2>Desarrollo Web & React</h2>
+                                    <p>Descubre los pilares que construyen internet y cómo se interconectan el frontend y el backend.</p>
+                                </div>
+
+                                <div className="topic-card">
+                                    <div className="topic-header">
+                                        <span className="topic-number">01</span>
+                                        <h3>¿Qué es el Desarrollo Web?</h3>
+                                    </div>
+                                    <p className="topic-text">
+                                        El <strong>Desarrollo Web</strong> es el proceso de diseñar, programar, construir y mantener aplicaciones web que se ejecutan a través de navegadores. Gracias a <strong>React</strong>, hoy en día creamos Single Page Applications (SPA) ultrarrápidas y modulares.
+                                    </p>
+                                </div>
+
+                                <div className="topic-card">
+                                    <div className="topic-header">
+                                        <span className="topic-number">02</span>
+                                        <h3>La Trinidad de la Web + React</h3>
+                                    </div>
+                                    <div className="tech-trio-grid">
+                                        <div className="tech-box html-border">
+                                            <div className="tech-header">
+                                                <i className="fa-brands fa-html5 icon-orange"></i>
+                                                <h4>HTML5 (Estructura)</h4>
+                                            </div>
+                                            <p>Define los elementos del documento: párrafos, títulos, imágenes y botones semánticos.</p>
+                                            <div className="code-snippet-small">
+                                                <code>&lt;button className="btn"&gt;Click&lt;/button&gt;</code>
+                                            </div>
+                                        </div>
+
+                                        <div className="tech-box css-border">
+                                            <div className="tech-header">
+                                                <i className="fa-brands fa-css3-alt icon-blue"></i>
+                                                <h4>CSS3 (Diseño & Estilo)</h4>
+                                            </div>
+                                            <p>Otorga estilo visual: paleta de colores, tipografías, sombras y diseño responsivo para celulares.</p>
+                                            <div className="code-snippet-small">
+                                                <code>.btn &#123; background: #06b6d4; &#125;</code>
+                                            </div>
+                                        </div>
+
+                                        <div className="tech-box js-border">
+                                            <div className="tech-header">
+                                                <i className="fa-brands fa-react icon-cyan"></i>
+                                                <h4>React (Componentes)</h4>
+                                            </div>
+                                            <p>Crea componentes reutilizables con estado reactivo (Hooks) que actualizan la interfaz automáticamente.</p>
+                                            <div className="code-snippet-small">
+                                                <code>const [count, setCount] = useState(0);</code>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {/* Mini Laboratorio Interactivo con React State */}
+                                    <div className="interactive-lab">
+                                        <h4><i className="fa-solid fa-laptop-code"></i> Mini Laboratorio: React State en Vivo</h4>
+                                        <p>Interactúa con los controles para ver cómo React actualiza el estado y re-renderiza el componente:</p>
+                                        
+                                        <div className="lab-controls">
+                                            <div className="control-group">
+                                                <label><i className="fa-solid fa-palette"></i> Cambiar Estilo CSS:</label>
+                                                <button className="lab-btn" onClick={() => { setLabTheme('neon'); setLabConsole('Console: Estado labTheme cambiado a "neon"'); }}>Neón Cyan</button>
+                                                <button className="lab-btn" onClick={() => { setLabTheme('purple'); setLabConsole('Console: Estado labTheme cambiado a "purple"'); }}>Morado Futurista</button>
+                                                <button className="lab-btn" onClick={() => { setLabTheme('warning'); setLabConsole('Console: Estado labTheme cambiado a "warning"'); }}>Gradiente Dorado</button>
+                                            </div>
+                                            <div className="control-group">
+                                                <label><i className="fa-solid fa-bolt"></i> Acción React State:</label>
+                                                <button className="lab-btn" onClick={() => { 
+                                                    const next = labClicks + 1;
+                                                    setLabClicks(next); 
+                                                    setLabConsole(`Console: setLabClicks invocado. Nuevo estado: ${next}`); 
+                                                }}>
+                                                    Disparar Evento Clic
+                                                </button>
+                                            </div>
+                                        </div>
+
+                                        <div className="lab-preview-box">
+                                            <div className={`lab-sample ${labTheme}`}>
+                                                <i className="fa-brands fa-react"></i>
+                                                <span>Componente React Activo: {labClicks} clics</span>
+                                            </div>
+                                            <div className="lab-log">{labConsole}</div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="topic-card">
+                                    <div className="topic-header">
+                                        <span className="topic-number">03</span>
+                                        <h3>Frontend vs. Backend: ¿En qué se diferencian?</h3>
+                                    </div>
+                                    <div className="comparison-grid">
+                                        <div className="comparison-col front-col">
+                                            <h4><i className="fa-solid fa-desktop icon-cyan"></i> Frontend (Cliente)</h4>
+                                            <ul>
+                                                <li><strong>¿Dónde corre?</strong> En el navegador web del usuario final.</li>
+                                                <li><strong>¿De qué se encarga?</strong> UI/UX, animaciones, accesibilidad y componentes React.</li>
+                                                <li><strong>Tecnologías:</strong> HTML5, CSS3, JavaScript, React, Tailwind CSS.</li>
+                                            </ul>
+                                        </div>
+                                        <div className="comparison-col back-col">
+                                            <h4><i className="fa-solid fa-server icon-purple"></i> Backend (Servidor)</h4>
+                                            <ul>
+                                                <li><strong>¿Dónde corre?</strong> En servidores remotos o en la nube.</li>
+                                                <li><strong>¿De qué se encarga?</strong> Lógica de negocio, bases de datos, APIs y seguridad.</li>
+                                                <li><strong>Tecnologías:</strong> Python, Node.js, PostgreSQL, MongoDB, Docker.</li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+                            </section>
+                        )}
+
+                        {/* 4. SECCIÓN LENGUAJES */}
+                        {activeSection === 'lenguajes' && (
+                            <section className="content-section active">
+                                <div className="section-header-banner lang-gradient">
+                                    <div className="header-badge"><i className="fa-solid fa-terminal"></i> Módulo 03</div>
+                                    <h2>Lenguajes de Programación Clave</h2>
+                                    <p>Explora la sintaxis y características de los lenguajes más demandados en la era de la IA y la Web.</p>
+                                </div>
+
+                                <div className="lang-showcase">
+                                    <div className="lang-card">
+                                        <div className="lang-header">
+                                            <div className="lang-title-box">
+                                                <i className="fa-brands fa-python icon-yellow"></i>
+                                                <div>
+                                                    <h3>Python</h3>
+                                                    <span className="lang-role">El estándar en Inteligencia Artificial & Data Science</span>
+                                                </div>
+                                            </div>
+                                            <span className="badge-role">Backend & IA</span>
+                                        </div>
+                                        <p className="lang-desc">
+                                            Famoso por su sintaxis limpia y legible. Es el lenguaje predilecto para entrenar redes neuronales con PyTorch y TensorFlow.
+                                        </p>
+                                        <div className="code-editor-mock">
+                                            <div className="mock-header">
+                                                <span>prediccion.py</span>
+                                                <button className="copy-btn" onClick={() => handleCopyCode('python', 'import numpy as np\ndef activar_neurona(entradas, pesos, sesgo):\n    return 1 / (1 + np.exp(-(np.dot(entradas, pesos) + sesgo)))')}>
+                                                    <i className="fa-regular fa-copy"></i> {copiedSnippet === 'python' ? '¡Copiado!' : 'Copiar'}
+                                                </button>
+                                            </div>
+                                            <pre><code><span className="code-keyword">import</span> numpy <span className="code-keyword">as</span> np
+
+<span className="code-keyword">def</span> <span className="code-func">activar_neurona</span>(entradas, pesos, sesgo):
+    suma = np.dot(entradas, pesos) + sesgo
+    <span className="code-keyword">return</span> 1 / (1 + np.exp(-suma))
+
+resultado = activar_neurona([0.8, 0.4], [0.5, 0.9], 0.1)
+<span className="code-func">print</span>(<span className="code-string">f"Activación calculada: &#123;resultado:.3f&#125;"</span>)</code></pre>
+                                        </div>
+                                    </div>
+
+                                    <div className="lang-card">
+                                        <div className="lang-header">
+                                            <div className="lang-title-box">
+                                                <i className="fa-brands fa-react icon-cyan"></i>
+                                                <div>
+                                                    <h3>JavaScript & React (JSX)</h3>
+                                                    <span className="lang-role">El ecosistema interactivo de la Web</span>
+                                                </div>
+                                            </div>
+                                            <span className="badge-role">Frontend & React</span>
+                                        </div>
+                                        <p className="lang-desc">
+                                            React permite declarar cómo debe verse la UI en función del estado, gestionando automáticamente las actualizaciones del DOM.
+                                        </p>
+                                        <div className="code-editor-mock">
+                                            <div className="mock-header">
+                                                <span>ComponenteReact.jsx</span>
+                                                <button className="copy-btn" onClick={() => handleCopyCode('react', 'function Asistente() {\n  const [query, setQuery] = useState("");\n  return <input value={query} onChange={e => setQuery(e.target.value)} />;\n}')}>
+                                                    <i className="fa-regular fa-copy"></i> {copiedSnippet === 'react' ? '¡Copiado!' : 'Copiar'}
+                                                </button>
+                                            </div>
+                                            <pre><code><span className="code-keyword">function</span> <span className="code-func">AsistenteIA</span>() &#123;
+    <span className="code-keyword">const</span> [respuesta, setRespuesta] = <span className="code-func">useState</span>(<span className="code-string">""</span>);
+
+    <span className="code-keyword">return</span> (
+        &lt;<span className="code-keyword">div</span> className=<span className="code-string">"card"</span>&gt;
+            &lt;<span className="code-keyword">h4</span>&gt;Respuesta del Modelo:&lt;/<span className="code-keyword">h4</span>&gt;
+            &lt;<span className="code-keyword">p</span>&gt;&#123;respuesta || <span className="code-string">"Esperando consulta..."</span>&#125;&lt;/<span className="code-keyword">p</span>&gt;
+        &lt;/<span className="code-keyword">div</span>&gt;
+    );
+&#125;</code></pre>
+                                        </div>
+                                    </div>
+                                </div>
+                            </section>
+                        )}
+
+                        {/* 5. SECCIÓN HERRAMIENTAS */}
+                        {activeSection === 'herramientas' && (
+                            <section className="content-section active">
+                                <div className="section-header-banner tools-gradient">
+                                    <div className="header-badge"><i className="fa-solid fa-toolbox"></i> Módulo 04</div>
+                                    <h2>Herramientas de IA y Desarrollo</h2>
+                                    <p>Las tecnologías líderes que multiplican la productividad de los desarrolladores modernos.</p>
+                                </div>
+
+                                <div className="tools-grid">
+                                    <div className="tool-card">
+                                        <div className="tool-top">
+                                            <div className="tool-icon-circle green-glow"><i className="fa-solid fa-comments"></i></div>
+                                            <div>
+                                                <h3>ChatGPT (OpenAI)</h3>
+                                                <span className="tool-category">Modelo de Lenguaje (LLM)</span>
+                                            </div>
+                                        </div>
+                                        <p className="tool-text">Revolucionó el acceso a la inteligencia artificial mediante interfaces conversacionales basadas en Transformers.</p>
+                                        <div className="tool-usecases">
+                                            <strong>Casos de uso para desarrolladores:</strong>
+                                            <ul>
+                                                <li><i className="fa-solid fa-check"></i> Generación de funciones y componentes React.</li>
+                                                <li><i className="fa-solid fa-check"></i> Explicación de errores y stack traces complejos.</li>
+                                                <li><i className="fa-solid fa-check"></i> Creación de pruebas unitarias y documentación.</li>
+                                            </ul>
+                                        </div>
+                                    </div>
+
+                                    <div className="tool-card">
+                                        <div className="tool-top">
+                                            <div className="tool-icon-circle blue-glow"><i className="fa-solid fa-wand-magic-sparkles"></i></div>
+                                            <div>
+                                                <h3>Gemini (Google)</h3>
+                                                <span className="tool-category">IA Multimodal Nativa</span>
+                                            </div>
+                                        </div>
+                                        <p className="tool-text">Diseñado nativamente para ser multimodal: procesa texto, código, imágenes y video con ventanas de contexto gigantes.</p>
+                                        <div className="tool-usecases">
+                                            <strong>Casos de uso para desarrolladores:</strong>
+                                            <ul>
+                                                <li><i className="fa-solid fa-check"></i> Análisis de maquetas de diseño (UI a código React).</li>
+                                                <li><i className="fa-solid fa-check"></i> Razonamiento profundo sobre repositorios enteros.</li>
+                                                <li><i className="fa-solid fa-check"></i> Integración fluida en Android y Google Cloud.</li>
+                                            </ul>
+                                        </div>
+                                    </div>
+
+                                    <div className="tool-card">
+                                        <div className="tool-top">
+                                            <div className="tool-icon-circle purple-glow"><i className="fa-brands fa-github"></i></div>
+                                            <div>
+                                                <h3>GitHub</h3>
+                                                <span className="tool-category">Control de Versiones & Git</span>
+                                            </div>
+                                        </div>
+                                        <p className="tool-text">La plataforma donde vive el código del mundo. Permite colaborar en equipo, revisar Pull Requests y desplegar proyectos.</p>
+                                        <div className="tool-usecases">
+                                            <strong>Casos de uso para desarrolladores:</strong>
+                                            <ul>
+                                                <li><i className="fa-solid fa-check"></i> Historial completo y seguro de versiones.</li>
+                                                <li><i className="fa-solid fa-check"></i> Integración con GitHub Actions y CI/CD.</li>
+                                                <li><i className="fa-solid fa-check"></i> Publicación con GitHub Pages.</li>
+                                            </ul>
+                                        </div>
+                                    </div>
+
+                                    <div className="tool-card">
+                                        <div className="tool-top">
+                                            <div className="tool-icon-circle cyan-glow"><i className="fa-solid fa-laptop-file"></i></div>
+                                            <div>
+                                                <h3>Visual Studio Code</h3>
+                                                <span className="tool-category">Entorno de Desarrollo (IDE)</span>
+                                            </div>
+                                        </div>
+                                        <p className="tool-text">El editor de código más popular del mundo. Ligero, altamente personalizable y con extensiones para React.</p>
+                                        <div className="tool-usecases">
+                                            <strong>Casos de uso para desarrolladores:</strong>
+                                            <ul>
+                                                <li><i className="fa-solid fa-check"></i> Terminal integrada, depuración y Git visual.</li>
+                                                <li><i className="fa-solid fa-check"></i> Extensiones para React, ESLint y Prettier.</li>
+                                                <li><i className="fa-solid fa-check"></i> Autocompletado inteligente impulsado por IA.</li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+                            </section>
+                        )}
+
+                        {/* 6. SECCIÓN CUESTIONARIO */}
+                        {activeSection === 'cuestionario' && (
+                            <InteractiveQuiz onNavigateHome={() => onNavigate('inicio')} />
+                        )}
+                    </div>
+                </main>
+            );
+        }
+
+        // ==========================================
+        // 5. COMPONENTE: ASSISTANT PANEL (Chatbot)
+        // ==========================================
+        function AssistantPanel({ isOpen, onClose }) {
+            const knowledgeBase = [
+                {
+                    keywords: ['hola', 'buenas', 'saludos', 'hey', 'buen dia', 'que tal'],
+                    answer: "¡Hola! Un gusto saludarte. Soy tu asistente educativo en React. Puedo resolver dudas sobre Inteligencia Artificial, Desarrollo Web, HTML, CSS, JavaScript o React. ¿En qué puedo ayudarte hoy?"
+                },
+                {
+                    keywords: ['que es la ia', 'que es inteligencia artificial', 'definicion de ia', 'concepto de ia'],
+                    answer: "La <strong>Inteligencia Artificial (IA)</strong> es una rama de la informática orientada a crear sistemas y algoritmos capaces de resolver tareas que tradicionalmente requerían inteligencia humana: aprendizaje, razonamiento y toma de decisiones."
+                },
+                {
+                    keywords: ['frontend', 'backend', 'diferencia entre frontend y backend'],
+                    answer: "<strong>Frontend vs Backend:</strong><br><br>• <strong>Frontend:</strong> Es la interfaz visual y la interacción en el navegador (HTML5, CSS3, JavaScript, React).<br>• <strong>Backend:</strong> Es el servidor que almacena la información, gestiona la seguridad y ejecuta la lógica de negocio (Python, Node.js, SQL)."
+                },
+                {
+                    keywords: ['que lenguaje aprender', 'primer lenguaje', 'que lenguaje debo aprender'],
+                    answer: "1. Si deseas crear <strong>sitios y aplicaciones web</strong>: Comienza con <strong>HTML, CSS, JavaScript y React</strong>.<br>2. Si buscas especializarte en <strong>IA y Data Science</strong>: <strong>Python</strong> es el estándar indiscutible."
+                },
+                {
+                    keywords: ['para que sirve javascript', 'que es javascript', 'javascript', 'js'],
+                    answer: "<strong>JavaScript</strong> es el lenguaje nativo de los navegadores web. Permite dotar de dinamismo e interactividad a las páginas, manipular el DOM y construir aplicaciones con bibliotecas como React."
+                },
+                {
+                    keywords: ['que es react', 'react', 'porque react'],
+                    answer: "<strong>React</strong> es una biblioteca declarativa y basada en componentes creada por Meta. Facilita la creación de interfaces de usuario interactivas mediante componentes reutilizables y un DOM virtual eficiente."
+                },
+                {
+                    keywords: ['que es un llm', 'llm', 'chatgpt', 'gemini'],
+                    answer: "Un <strong>LLM (Large Language Model)</strong> es un modelo neuronal entrenado con grandes volúmenes de texto para comprender y redactar lenguaje natural. Ejemplos destacados son <strong>ChatGPT (OpenAI)</strong> y <strong>Gemini (Google)</strong>."
+                }
+            ];
+
+            const [messages, setMessages] = useState([
+                {
+                    sender: 'bot',
+                    text: '¡Hola! Soy tu <strong>AI Learning Assistant</strong> en React. 🚀<br>Pregúntame sobre IA, Desarrollo Web, HTML, CSS, JavaScript o React.',
+                    time: 'Ahora'
+                }
+            ]);
+            const [inputValue, setInputValue] = useState('');
+            const [isTyping, setIsTyping] = useState(false);
+            const messagesEndRef = useRef(null);
+
+            const faqChips = [
+                "¿Qué es la IA?",
+                "Frontend vs Backend",
+                "¿Qué lenguaje aprender?",
+                "¿Para qué sirve JS?",
+                "¿Qué es React?",
+                "¿Qué es un LLM?"
+            ];
+
+            useEffect(() => {
+                if (messagesEndRef.current) {
+                    messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
+                }
+            }, [messages, isTyping]);
+
+            const handleSend = (textToSend) => {
+                const query = (textToSend || inputValue).trim();
+                if (!query) return;
+
+                const now = new Date();
+                const timeStr = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+                setMessages(prev => [...prev, { sender: 'user', text: query, time: timeStr }]);
+                setInputValue('');
+                setIsTyping(true);
+
+                setTimeout(() => {
+                    const clean = query.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+                    let reply = `Excelente pregunta. Como asistente educativo de esta plataforma puedo orientarte en:<br><br>
+                        • <strong>IA & Machine Learning:</strong> modelos, inferencia, ventajas.<br>
+                        • <strong>Desarrollo Web:</strong> HTML5, CSS3, JS, React, Frontend vs Backend.<br>
+                        • <strong>Herramientas:</strong> ChatGPT, Gemini, Git y VS Code.`;
+
+                    for (const item of knowledgeBase) {
+                        for (const kw of item.keywords) {
+                            const cleanKw = kw.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+                            if (clean.includes(cleanKw)) {
+                                reply = item.answer;
+                                break;
+                            }
+                        }
+                    }
+
+                    setMessages(prev => [...prev, { sender: 'bot', text: reply, time: timeStr }]);
+                    setIsTyping(false);
+                }, 450);
+            };
+
+            return (
+                <aside className={`panel right-panel ${isOpen ? 'open' : ''}`} id="assistant-panel">
+                    <div className="assistant-header">
+                        <div className="assistant-brand">
+                            <div className="assistant-avatar">
+                                <i className="fa-solid fa-robot"></i>
+                                <span className="online-dot"></span>
+                            </div>
+                            <div>
+                                <h3 className="assistant-name">AI Learning Assistant</h3>
+                                <span className="assistant-status"><i className="fa-brands fa-react"></i> React State Active</span>
+                            </div>
+                        </div>
+                        <button className="icon-btn close-assistant-btn mobile-only" onClick={onClose} title="Cerrar panel">
+                            <i className="fa-solid fa-xmark"></i>
+                        </button>
+                    </div>
+
+                    <div className="faq-container">
+                        <span className="faq-label"><i className="fa-solid fa-bolt"></i> Preguntas frecuentes:</span>
+                        <div className="faq-chips">
+                            {faqChips.map((chip, i) => (
+                                <button key={i} className="faq-chip" onClick={() => handleSend(chip)}>
+                                    {chip}
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+
+                    <div className="chat-messages">
+                        {messages.map((msg, i) => (
+                            <div key={i} className={`chat-message ${msg.sender}`}>
+                                <div className="msg-avatar">
+                                    <i className={`fa-solid ${msg.sender === 'bot' ? 'fa-robot' : 'fa-user'}`}></i>
+                                </div>
+                                <div className="msg-content">
+                                    <p dangerouslySetInnerHTML={{ __html: msg.text }}></p>
+                                    <span className="msg-time">{msg.time}</span>
+                                </div>
+                            </div>
+                        ))}
+                        {isTyping && (
+                            <div className="chat-message bot typing">
+                                <div className="msg-avatar"><i className="fa-solid fa-robot"></i></div>
+                                <div className="msg-content">
+                                    <p><i className="fa-solid fa-ellipsis fa-fade"></i> Analizando consulta...</p>
+                                </div>
+                            </div>
+                        )}
+                        <div ref={messagesEndRef} />
+                    </div>
+
+                    <form className="chat-input-area" onSubmit={(e) => { e.preventDefault(); handleSend(); }}>
+                        <input 
+                            type="text" 
+                            className="chat-input" 
+                            placeholder="Escribe tu pregunta sobre IA o Web..." 
+                            value={inputValue}
+                            onChange={(e) => setInputValue(e.target.value)}
+                        />
+                        <button type="submit" className="chat-send-btn" aria-label="Enviar pregunta">
+                            <i className="fa-solid fa-paper-plane"></i>
+                        </button>
+                    </form>
+                </aside>
+            );
+        }
+
+        // ==========================================
+        // 6. COMPONENTE: STATUS BAR (Barra Inferior)
+        // ==========================================
+        function StatusBar() {
+            return (
+                <footer className="ide-statusbar">
+                    <div className="status-left">
+                        <span className="status-item"><i className="fa-solid fa-code-branch"></i> main*</span>
+                        <span className="status-item"><i className="fa-brands fa-react icon-cyan"></i> React 18 (JSX)</span>
+                        <span className="status-item"><i className="fa-regular fa-circle-check"></i> 0 errores</span>
+                    </div>
+                    <div className="status-right">
+                        <span className="status-item">UTF-8</span>
+                        <span className="status-item">HTML5 / CSS3 / React 18</span>
+                        <span className="status-item"><i className="fa-solid fa-wifi"></i> Conectado</span>
+                    </div>
+                </footer>
+            );
+        }
+
+        // ==========================================
+        // 7. COMPONENTE PRINCIPAL: APP
+        // ==========================================
+        function App() {
+            const [activeSection, setActiveSection] = useState('inicio');
+            const [visitedSections, setVisitedSections] = useState(new Set(['inicio']));
+            const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+            const [isAssistantOpen, setIsAssistantOpen] = useState(false);
+
+            const handleNavigate = (sectionId) => {
+                setActiveSection(sectionId);
+                setVisitedSections(prev => new Set([...prev, sectionId]));
+                setIsSidebarOpen(false);
+                setIsAssistantOpen(false);
+            };
+
+            const totalSections = 6;
+            const progressPercent = Math.round((visitedSections.size / totalSections) * 100);
+
+            return (
+                <div className="app-root">
+                    <TopNav 
+                        activeSection={activeSection}
+                        onToggleSidebar={() => {
+                            setIsSidebarOpen(prev => !prev);
+                            setIsAssistantOpen(false);
+                        }}
+                        onToggleAssistant={() => {
+                            setIsAssistantOpen(prev => !prev);
+                            setIsSidebarOpen(false);
+                        }}
+                    />
+
+                    <div className="ide-container">
+                        <Sidebar 
+                            activeSection={activeSection}
+                            onNavigate={handleNavigate}
+                            isOpen={isSidebarOpen}
+                            progressPercent={progressPercent}
+                        />
+
+                        <MainContent 
+                            activeSection={activeSection}
+                            onNavigate={handleNavigate}
+                        />
+
+                        <AssistantPanel 
+                            isOpen={isAssistantOpen}
+                            onClose={() => setIsAssistantOpen(false)}
+                        />
+                    </div>
+
+                    <StatusBar />
+                </div>
+            );
+        }
+
+        // Montaje del árbol React en el DOM
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    }
+    </script>
+</body>
+</html>
